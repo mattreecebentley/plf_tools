@@ -203,7 +203,7 @@
 	#endif
 
 
-	#if defined(PLF_IS_ALWAYS_EQUAL_SUPPORT) && defined(PLF_MOVE_SEMANTICS_SUPPORT) && (__cplusplus >= 201703L || (defined(_MSVC_LANG) && (_MSVC_LANG >= 201703L)))
+	#if defined(PLF_IS_ALWAYS_EQUAL_SUPPORT) && defined(PLF_MOVE_SEMANTICS_SUPPORT) && defined(PLF_ALLOCATOR_TRAITS_SUPPORT) && (__cplusplus >= 201703L || (defined(_MSVC_LANG) && (_MSVC_LANG >= 201703L)))
 		#define PLF_NOEXCEPT_MOVE_ASSIGN(the_allocator) noexcept(std::allocator_traits<the_allocator>::propagate_on_container_move_assignment::value || std::allocator_traits<the_allocator>::is_always_equal::value)
 		#define PLF_NOEXCEPT_SWAP(the_allocator) noexcept(std::allocator_traits<the_allocator>::propagate_on_container_swap::value || std::allocator_traits<the_allocator>::is_always_equal::value)
 	#else
@@ -233,6 +233,7 @@
 		#define PLF_ALLOCATE(the_allocator, allocator_instance, size, hint)			(allocator_instance).allocate(size, hint)
 		#define PLF_DEALLOCATE(the_allocator, allocator_instance, location, size)	(allocator_instance).deallocate(location, size)
 	#endif
+
 
 	#define PLF_CONSTRUCT_ELEMENT(location, element) PLF_CONSTRUCT(allocator_type, *this, pointer_cast<pointer>(location), element)
 
@@ -339,7 +340,9 @@
 		#endif
 
 
+
 		enum priority { performance = 1, memory_use = 4};
+
 
 
 		#ifdef PLF_CPP20_SUPPORT
@@ -355,6 +358,32 @@
 			}
 		#endif
 
+
+
+		// To simplify conversion when allocator supplies non-raw pointers:
+		template <class destination_pointer_type, class source_pointer_type>
+		static PLF_CONSTFUNC destination_pointer_type pointer_cast(const source_pointer_type source_pointer) PLF_NOEXCEPT
+		{                              
+			#if defined(PLF_TYPE_TRAITS_SUPPORT) && defined(PLF_CPP20_SUPPORT) // constexpr necessary to avoid a branch for every call
+				if constexpr (std::is_trivially_constructible<destination_pointer_type>::value)
+				{
+					if constexpr (std::is_trivially_constructible<source_pointer_type>::value)
+					{
+						return reinterpret_cast<destination_pointer_type>(source_pointer);
+					}
+					else
+					{
+						return reinterpret_cast<destination_pointer_type>(std::to_address(source_pointer));
+					}
+				}
+				else
+				{
+					return destination_pointer_type(std::to_address(source_pointer));
+				}
+			#else
+				return destination_pointer_type(&*source_pointer);
+			#endif
+		}
 
 	} // plf namepsace
 
