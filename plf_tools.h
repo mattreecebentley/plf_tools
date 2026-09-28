@@ -488,7 +488,7 @@
 		template<typename storage_type>
 		static PLF_CONSTFUNC std::size_t countr_one(const storage_type value)
 		{
-			return plf::countr_zero(~value);
+			return plf::countr_zero(static_cast<storage_type>(~value));
 		}
 
 
@@ -555,7 +555,7 @@
 		template<typename storage_type>
 		static PLF_CONSTFUNC std::size_t countl_one(const storage_type value)
 		{
-			return plf::countl_zero(~value);
+			return plf::countl_zero(static_cast<storage_type>(~value));
 		}
 
 	} // plf namespace
