@@ -1,3 +1,4 @@
+#define PLF_INCLUDE_TOOLS
 #define PLF_INCLUDE_BIT_TOOLS
 #include "plf_tools.h"
 
@@ -124,6 +125,21 @@ bool check_bit_patterns()
 
 
 
+// plf::less and plf::equal_to are the default comparators for plf::indiesort and plf::reorderase_all, so they need to be usable in constant expressions as well as at runtime:
+PLF_CONSTFUNC bool check_comparators()
+{
+	const int one = 1, two = 2;
+
+	return plf::less<int>()(one, two) && !plf::less<int>()(two, one) && !plf::less<int>()(one, one) &&
+		plf::equal_to<int>(one)(one) && !plf::equal_to<int>(one)(two);
+}
+
+#ifdef PLF_CPP20_SUPPORT
+	static_assert(check_comparators(), "plf::less and plf::equal_to must be usable in constant expressions");
+#endif
+
+
+
 int main()
 {
 	failpass("unsigned char, all values", check_all_values<unsigned char>());
@@ -136,6 +152,7 @@ int main()
 	#endif
 
 	failpass("std::size_t, bit patterns", check_bit_patterns<std::size_t>());
+	failpass("plf::less and plf::equal_to", check_comparators());
 
 	printf("Press ENTER to quit");
 	getchar();

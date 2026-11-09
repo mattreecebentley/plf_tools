@@ -330,7 +330,7 @@
 		template <class element_type>
 		struct less
 		{
-			bool operator() (const element_type &a, const element_type &b) const PLF_NOEXCEPT
+			PLF_CONSTFUNC bool operator() (const element_type &a, const element_type &b) const PLF_NOEXCEPT
 			{
 				return a < b;
 			}
@@ -343,11 +343,11 @@
 		{
 			const element_type &value;
 
-			explicit equal_to(const element_type &store_value) PLF_NOEXCEPT:
+			PLF_CONSTFUNC explicit equal_to(const element_type &store_value) PLF_NOEXCEPT:
 				value(store_value)
 			{}
 
-			bool operator() (const element_type &compare_value) const PLF_NOEXCEPT
+			PLF_CONSTFUNC bool operator() (const element_type &compare_value) const PLF_NOEXCEPT
 			{
 				return value == compare_value;
 			}
